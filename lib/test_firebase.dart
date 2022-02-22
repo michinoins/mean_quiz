@@ -14,7 +14,7 @@ class GetUserName extends StatelessWidget {
       builder:
           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.hasError) {
-          return Text("Something went wrong");
+          return Text("Something went wrong test");
         }
 
         if (snapshot.hasData && !snapshot.data!.exists) {
