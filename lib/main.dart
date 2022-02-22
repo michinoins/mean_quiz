@@ -1,7 +1,10 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/question_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -29,7 +32,7 @@ class MyApp extends StatelessWidget {
 
 class Home extends StatefulWidget {
   // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
+  // that it has a State objfect (defined below) that contains fields that affect
   // how it looks.
 
   // This class is the configuration for the state. It holds the values (in this
@@ -49,14 +52,18 @@ class _Home extends State<Home> {
           title: const Text('ホーム画面ホットリロードチェック'),
         ),
         body: Center(
-            child: SizedBox(
-                height: 40,
-                child: ElevatedButton(
-                  child: Text("問題をaa解く"),
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => Question()));
-                  },
-                ))));
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+              SizedBox(
+                  height: 40,
+                  child: ElevatedButton(
+                    child: Text("問題に進む"),
+                    onPressed: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => Question()));
+                    },
+                  ))
+            ])));
   }
 }

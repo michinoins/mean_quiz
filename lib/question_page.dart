@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/result.dart';
+import 'package:flutter_app/test_firebase.dart';
 
 class Question extends StatefulWidget {
   @override
@@ -15,6 +16,8 @@ class _QuestionState extends State<Question> {
     "問題4",
     "問題5",
   ];
+
+  var firebaseQuestions = GetUserName("");
 
   static const List<String> questionSentences = [
     "「テトリス（ゲーム）」を開発したのは、日本人だ。",
