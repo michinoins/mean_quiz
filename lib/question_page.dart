@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_app/entity/quiz.dart';
 import 'package:flutter_app/result.dart';
 
 class Question extends StatefulWidget {
@@ -17,9 +18,8 @@ class _QuestionState extends State<Question> {
     "問題5",
   ];
 
-  String getSample() {
+  String getQuiz() {
     // 返り値として渡すためのドキュメント数を入れる変数
-    int document_num;
 
     // 検索結果は、一旦はFuture型で取得
     Future<QuerySnapshot<Map<String, dynamic>>> snapshot =
@@ -27,9 +27,13 @@ class _QuestionState extends State<Question> {
 
     // ドキュメント数を取得。
     snapshot.then((value) {
-      print(value.docs.length);
-      print(value.docs[0]["quizSentence"]);
+      var quizes = value.docs.map((doc) => Quiz.fromDocument(doc));
+      quizes.forEach((element) {
+        print("quizes" + element.quizSentence);
+      });
+      print("問題" + value.docs[0].id);
     });
+
     return "";
   }
 
@@ -51,7 +55,7 @@ class _QuestionState extends State<Question> {
 
   @override
   Widget build(BuildContext context) {
-    getSample();
+    getQuiz();
     return Scaffold(
         appBar: AppBar(
           title: Text("問題ページ"),
