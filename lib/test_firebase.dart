@@ -9,25 +9,25 @@ class GetUserName extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     CollectionReference users = FirebaseFirestore.instance.collection('quiz');
-    return FutureBuilder<DocumentSnapshot>(
-      future: users.doc("questions").get(),
-      builder:
-          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+    return FutureBuilder<QuerySnapshot>(
+      future: users.get(),
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasError) {
-          return Text("Something went wrong test");
+          return Text('Something went wrong');
         }
-
-        if (snapshot.hasData && !snapshot.data!.exists) {
-          return Text("Document does not exist");
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Text("Loading");
         }
-
-        if (snapshot.connectionState == ConnectionState.done) {
-          Map<String, dynamic> data =
-              snapshot.data!.data() as Map<String, dynamic>;
-          return Text("テストfirebase? ${data['content']}");
-        }
-
-        return Text("loading");
+        return ListView(
+          children: snapshot.data!.docs.map((DocumentSnapshot document) {
+            Map<String, dynamic> data =
+                document.data()! as Map<String, dynamic>;
+            return ListTile(
+              title: Text(data['quizSentence']),
+              subtitle: Text(data['answer']),
+            );
+          }).toList(),
+        );
       },
     );
   }

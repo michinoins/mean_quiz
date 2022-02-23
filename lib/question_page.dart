@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/result.dart';
-import 'package:flutter_app/test_firebase.dart';
 
 class Question extends StatefulWidget {
   @override
@@ -17,7 +17,21 @@ class _QuestionState extends State<Question> {
     "問題5",
   ];
 
-  var firebaseQuestions = GetUserName("");
+  String getSample() {
+    // 返り値として渡すためのドキュメント数を入れる変数
+    int document_num;
+
+    // 検索結果は、一旦はFuture型で取得
+    Future<QuerySnapshot<Map<String, dynamic>>> snapshot =
+        FirebaseFirestore.instance.collection("quiz").get();
+
+    // ドキュメント数を取得。
+    snapshot.then((value) {
+      print(value.docs.length);
+      print(value.docs[0]["quizSentence"]);
+    });
+    return "";
+  }
 
   static const List<String> questionSentences = [
     "「テトリス（ゲーム）」を開発したのは、日本人だ。",
@@ -37,6 +51,7 @@ class _QuestionState extends State<Question> {
 
   @override
   Widget build(BuildContext context) {
+    getSample();
     return Scaffold(
         appBar: AppBar(
           title: Text("問題ページ"),
@@ -47,9 +62,9 @@ class _QuestionState extends State<Question> {
           Container(
             height: 50,
             color: Colors.red,
-            child: Center(
+            child: const Center(
               child: Text(
-                questions[questionNumber],
+                "一旦",
                 style: TextStyle(fontSize: 20),
               ),
             ),
