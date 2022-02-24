@@ -10,31 +10,21 @@ class Question extends StatefulWidget {
 
 class _QuestionState extends State<Question> {
   // 実際はDBから取ってくる
-  static const List<String> questions = [
-    "問題1",
-    "問題2",
-    "問題3",
-    "問題4",
-    "問題5",
-  ];
+  List<Quiz> quiz = [];
 
-  String getQuiz() {
-    // 返り値として渡すためのドキュメント数を入れる変数
-
+  // todo future builder で何か切り出すが正かな...?
+  setQuiz() async {
     // 検索結果は、一旦はFuture型で取得
     Future<QuerySnapshot<Map<String, dynamic>>> snapshot =
         FirebaseFirestore.instance.collection("quiz").get();
 
-    // ドキュメント数を取得。
-    snapshot.then((value) {
-      var quizes = value.docs.map((doc) => Quiz.fromDocument(doc));
-      quizes.forEach((element) {
-        print("quizes" + element.quizSentence);
+    // ドキュメントを取得
+    await snapshot.then((value) {
+      setState(() {
+        quiz = value.docs.map((doc) => Quiz.fromDocument(doc)).toList();
       });
-      print("問題" + value.docs[0].id);
     });
-
-    return "";
+    print("hoge" + quiz.elementAt(0).sentence);
   }
 
   static const List<String> questionSentences = [
@@ -44,7 +34,6 @@ class _QuestionState extends State<Question> {
     "パトカーは、取り締まっている最中であれば、どこでも駐車違反になることはない。",
     "昆虫の中には、口で呼吸する昆虫もいる。",
   ];
-
   static const List<bool> answers = [false, false, true, true, false];
 
   // 問題番号
@@ -55,7 +44,7 @@ class _QuestionState extends State<Question> {
 
   @override
   Widget build(BuildContext context) {
-    getQuiz();
+    setQuiz();
     return Scaffold(
         appBar: AppBar(
           title: Text("問題ページ"),
@@ -76,7 +65,7 @@ class _QuestionState extends State<Question> {
           Container(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                questionSentences[questionNumber],
+                quiz.elementAt(questionNumber).sentence,
                 style: TextStyle(fontSize: 20),
               )),
           Expanded(
@@ -91,11 +80,12 @@ class _QuestionState extends State<Question> {
                             child: ElevatedButton(
                               child: Text("まる"),
                               onPressed: () {
-                                bool answer = answers[questionNumber];
+                                bool answer =
+                                    quiz.elementAt(questionNumber).answer;
                                 if (answer == true) {
                                   // 正解の処理
                                   numOfCorrectAnswers++;
-                                  if (questionNumber + 1 < questions.length) {
+                                  if (questionNumber + 1 < quiz.length) {
                                     setState(() {
                                       questionNumber++;
                                     });
@@ -108,7 +98,7 @@ class _QuestionState extends State<Question> {
                                                     numOfCorrectAnswers)));
                                   }
                                 } else {
-                                  if (questionNumber + 1 < questions.length) {
+                                  if (questionNumber + 1 < quiz.length) {
                                     setState(() {
                                       questionNumber++;
                                     });
@@ -134,7 +124,7 @@ class _QuestionState extends State<Question> {
                                 if (answer == false) {
                                   // 正解の処理
                                   numOfCorrectAnswers++;
-                                  if (questionNumber + 1 < questions.length) {
+                                  if (questionNumber + 1 < quiz.length) {
                                     setState(() {
                                       questionNumber++;
                                     });
@@ -148,7 +138,7 @@ class _QuestionState extends State<Question> {
                                                 )));
                                   }
                                 } else {
-                                  if (questionNumber + 1 < questions.length) {
+                                  if (questionNumber + 1 < quiz.length) {
                                     setState(() {
                                       questionNumber++;
                                     });
