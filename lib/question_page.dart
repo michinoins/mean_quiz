@@ -9,7 +9,6 @@ class Question extends StatefulWidget {
 }
 
 class _QuestionState extends State<Question> {
-  // 実際はDBから取ってくる
   List<Quiz> quiz = [];
 
   // todo future builder で何か切り出すが正かな...?
