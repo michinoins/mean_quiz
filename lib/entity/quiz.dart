@@ -15,7 +15,7 @@ class Quiz {
   factory Quiz.fromDocument(DocumentSnapshot document) {
     return Quiz(
       id: document.id,
-      sentence: document['sentence'] as String,
+      sentence: document['quizSentence'] as String,
       answer: document['answer'] as bool,
       explanation: document['explanation'] as String,
     );

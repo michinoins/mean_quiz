@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/entity/quiz.dart';
@@ -10,21 +12,28 @@ class Question extends StatefulWidget {
 }
 
 class _QuestionState extends State<Question> {
-  List<Quiz> quiz = [];
+  @override
+  void initState() {
+    print("init State");
+    super.initState();
+    Future(() async {
+      await Future.delayed(Duration(seconds: 5));
+    });
+    setQuiz();
+  }
 
-  // todo future builder で何か切り出すが正かな...?
-  setQuiz() async {
+  Future<List<Quiz>> setQuiz() {
     // 検索結果は、一旦はFuture型で取得
     Future<QuerySnapshot<Map<String, dynamic>>> snapshot =
         FirebaseFirestore.instance.collection("quiz").get();
+    print("inSetQuiz");
 
     // ドキュメントを取得
-    await snapshot.then((value) {
-      setState(() {
-        quiz = value.docs.map((doc) => Quiz.fromDocument(doc)).toList();
-      });
-    });
-    print("hoge" + quiz.elementAt(0).sentence);
+    Future<List<Quiz>> quiz = snapshot.then(
+        (event) => event.docs.map((doc) => Quiz.fromDocument(doc)).toList());
+
+    print("after get");
+    return quiz;
   }
 
   static const List<String> questionSentences = [
@@ -44,117 +53,142 @@ class _QuestionState extends State<Question> {
 
   @override
   Widget build(BuildContext context) {
-    setQuiz();
+    print("in build");
     return Scaffold(
         appBar: AppBar(
           title: Text("問題ページ"),
         ),
-        body: Center(
-            child:
-                Column(mainAxisAlignment: MainAxisAlignment.start, children: [
-          Container(
-            height: 50,
-            color: Colors.red,
-            child: const Center(
-              child: Text(
-                "一旦",
-                style: TextStyle(fontSize: 20),
-              ),
-            ),
-          ),
-          Container(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                quiz.elementAt(questionNumber).sentence,
-                style: TextStyle(fontSize: 20),
-              )),
-          Expanded(
-              child: Padding(
-                  padding: const EdgeInsets.fromLTRB(50.0, 30.0, 50.0, 50.0),
-                  child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              child: Text("まる"),
-                              onPressed: () {
-                                bool answer =
-                                    quiz.elementAt(questionNumber).answer;
-                                if (answer == true) {
-                                  // 正解の処理
-                                  numOfCorrectAnswers++;
-                                  if (questionNumber + 1 < quiz.length) {
-                                    setState(() {
-                                      questionNumber++;
-                                    });
-                                  } else {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Result(
-                                                numberOfCorrectAnswer:
-                                                    numOfCorrectAnswers)));
-                                  }
-                                } else {
-                                  if (questionNumber + 1 < quiz.length) {
-                                    setState(() {
-                                      questionNumber++;
-                                    });
-                                  } else {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Result(
-                                                  numberOfCorrectAnswer:
-                                                      numOfCorrectAnswers,
-                                                )));
-                                  }
-                                }
-                              },
-                            )),
-                        SizedBox(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              child: const Text("ばつ"),
-                              onPressed: () {
-                                bool answer = answers[questionNumber];
-                                if (answer == false) {
-                                  // 正解の処理
-                                  numOfCorrectAnswers++;
-                                  if (questionNumber + 1 < quiz.length) {
-                                    setState(() {
-                                      questionNumber++;
-                                    });
-                                  } else {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Result(
-                                                  numberOfCorrectAnswer:
-                                                      numOfCorrectAnswers,
-                                                )));
-                                  }
-                                } else {
-                                  if (questionNumber + 1 < quiz.length) {
-                                    setState(() {
-                                      questionNumber++;
-                                    });
-                                  } else {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) => Result(
-                                                  numberOfCorrectAnswer:
-                                                      numOfCorrectAnswers,
-                                                )));
-                                  }
-                                }
-                              },
-                            ))
-                      ])))
-        ])));
+        body: FutureBuilder(
+            future: setQuiz(),
+            builder: (context, snapshot) {
+              print("outHasData");
+              print(snapshot.hasData);
+              if (snapshot.hasData) {
+                print("inHasData");
+                var quiz = snapshot.data as List<Quiz>;
+
+                return Center(
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                      Container(
+                        height: 50,
+                        color: Colors.red,
+                        child: const Center(
+                          child: Text(
+                            "一旦",
+                            style: TextStyle(fontSize: 20),
+                          ),
+                        ),
+                      ),
+                      Container(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            quiz.elementAt(questionNumber).sentence,
+                            style: TextStyle(fontSize: 20),
+                          )),
+                      Expanded(
+                          child: Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                  50.0, 30.0, 50.0, 50.0),
+                              child: Column(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceAround,
+                                  children: [
+                                    SizedBox(
+                                        width: double.infinity,
+                                        height: 50,
+                                        child: ElevatedButton(
+                                          child: Text("まる"),
+                                          onPressed: () {
+                                            bool answer = quiz
+                                                .elementAt(questionNumber)
+                                                .answer;
+                                            if (answer == true) {
+                                              // 正解の処理
+                                              numOfCorrectAnswers++;
+                                              if (questionNumber + 1 <
+                                                  quiz.length) {
+                                                setState(() {
+                                                  questionNumber++;
+                                                });
+                                              } else {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) => Result(
+                                                            numberOfCorrectAnswer:
+                                                                numOfCorrectAnswers)));
+                                              }
+                                            } else {
+                                              if (questionNumber + 1 <
+                                                  quiz.length) {
+                                                setState(() {
+                                                  questionNumber++;
+                                                });
+                                              } else {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Result(
+                                                              numberOfCorrectAnswer:
+                                                                  numOfCorrectAnswers,
+                                                            )));
+                                              }
+                                            }
+                                          },
+                                        )),
+                                    SizedBox(
+                                        width: double.infinity,
+                                        height: 50,
+                                        child: ElevatedButton(
+                                          child: const Text("ばつ"),
+                                          onPressed: () {
+                                            bool answer =
+                                                answers[questionNumber];
+                                            if (answer == false) {
+                                              // 正解の処理
+                                              numOfCorrectAnswers++;
+                                              if (questionNumber + 1 <
+                                                  quiz.length) {
+                                                setState(() {
+                                                  questionNumber++;
+                                                });
+                                              } else {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Result(
+                                                              numberOfCorrectAnswer:
+                                                                  numOfCorrectAnswers,
+                                                            )));
+                                              }
+                                            } else {
+                                              if (questionNumber + 1 <
+                                                  quiz.length) {
+                                                setState(() {
+                                                  questionNumber++;
+                                                });
+                                              } else {
+                                                Navigator.push(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            Result(
+                                                              numberOfCorrectAnswer:
+                                                                  numOfCorrectAnswers,
+                                                            )));
+                                              }
+                                            }
+                                          },
+                                        ))
+                                  ])))
+                    ]));
+              }
+              // while waiting for data to arrive, show a spinning indicator
+              return const CircularProgressIndicator();
+            }));
   }
 }
