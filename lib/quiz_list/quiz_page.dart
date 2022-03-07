@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_app/entity/quiz.dart';
+import 'package:flutter_app/quiz_list/result_presenter.dart';
 
 import '../result.dart';
 
@@ -12,38 +13,24 @@ class Question extends StatefulWidget {
 }
 
 class _QuestionState extends State<Question> {
+  final _resultPresenter = ResultPresenter();
+
   @override
   void initState() {
-    print("init State");
     super.initState();
-    Future(() async {
-      await Future.delayed(Duration(seconds: 5));
-    });
-    setQuiz();
   }
 
   Future<List<Quiz>> setQuiz() {
     // 検索結果は、一旦はFuture型で取得
     Future<QuerySnapshot<Map<String, dynamic>>> snapshot =
         FirebaseFirestore.instance.collection("quiz").get();
-    print("inSetQuiz");
 
     // ドキュメントを取得
     Future<List<Quiz>> quiz = snapshot.then(
         (event) => event.docs.map((doc) => Quiz.fromDocument(doc)).toList());
 
-    print("after get");
     return quiz;
   }
-
-  static const List<String> questionSentences = [
-    "「テトリス（ゲーム）」を開発したのは、日本人だ。",
-    "生きている間は、有名な人であっても広辞苑に載ることはない。",
-    "現在、2000円札は製造を停止している。",
-    "パトカーは、取り締まっている最中であれば、どこでも駐車違反になることはない。",
-    "昆虫の中には、口で呼吸する昆虫もいる。",
-  ];
-  static const List<bool> answers = [false, false, true, true, false];
 
   // 問題番号
   int questionNumber = 0;
@@ -61,12 +48,8 @@ class _QuestionState extends State<Question> {
         body: FutureBuilder(
             future: setQuiz(),
             builder: (context, snapshot) {
-              print("outHasData");
-              print(snapshot.hasData);
               if (snapshot.hasData) {
-                print("inHasData");
                 var quiz = snapshot.data as List<Quiz>;
-
                 return Center(
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.start,
@@ -145,8 +128,9 @@ class _QuestionState extends State<Question> {
                                         child: ElevatedButton(
                                           child: const Text("ばつ"),
                                           onPressed: () {
-                                            bool answer =
-                                                answers[questionNumber];
+                                            bool answer = quiz
+                                                .elementAt(questionNumber)
+                                                .answer;
                                             if (answer == false) {
                                               // 正解の処理
                                               numOfCorrectAnswers++;
