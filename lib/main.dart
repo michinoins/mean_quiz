@@ -1,6 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_app/question_page.dart';
+import 'package:flutter_app/quiz_list/quiz_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
